@@ -64,24 +64,8 @@ public class LoginActivity extends Activity {
 		        CookieSyncManager.getInstance().sync();
 		        // Get the cookie from cookie jar.
 		        String cookie = CookieManager.getInstance().getCookie(url);
-		        System.out.println("cookie");
 		        if (cookie == null) {
-		        	System.out.println("null");
 		          return;
-		        }
-		        // Cookie is a string like NAME=VALUE [; NAME=VALUE]
-		        String[] pairs = cookie.split(";");
-		        for (int i = 0; i < pairs.length; ++i) {
-		          String[] parts = pairs[i].split("=", 2);
-		          // If token is found, return it to the calling activity.
-		          if (parts.length == 2 &&
-		             parts[0].equalsIgnoreCase("MoodleSession")) {
-//		            Intent result = new Intent(context, PageLoad.class);
-//		            result.putExtra("token", parts[1]);
-//		            setResult(RESULT_OK, result);
-//		            finish();
-		            
-		          }
 		        }
 		        
 		        if(i==2){

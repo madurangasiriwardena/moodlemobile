@@ -18,12 +18,11 @@ public class PageTemplate extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_page_template);
-		final Context context = this;
 		
         HtmlPage page = new HtmlPage(getString(R.string.base_url), getString(R.string.base_url));
         
         WebView webView = (WebView)findViewById(R.id.webViewPage);
-//		webView.setWebViewClient(new WebViewClient());
+
         webView.setWebViewClient(new WebViewClient(){
         	@Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {

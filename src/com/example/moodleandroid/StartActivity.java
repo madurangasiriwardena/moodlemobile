@@ -22,7 +22,6 @@ public class StartActivity extends Activity {
 
 		final Context context = this;
 		String cookie;
-		System.out.println("aaaaaaa");
 
 		try {
 			cookie = CookieManager.getInstance().getCookie(getString(R.string.base_url));
