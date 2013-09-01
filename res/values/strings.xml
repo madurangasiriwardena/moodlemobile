@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Moodle</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_page_template">PageTemplate</string>
+    <string name="base_url">https://online.mrt.ac.lk/</string>
+    <string name="login_url">https://online.mrt.ac.lk/login/index.php</string>
+    
+
+</resources>
