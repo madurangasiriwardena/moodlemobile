@@ -3,7 +3,6 @@ package com.example.moodleandroid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieStore;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyStore;
@@ -19,11 +18,8 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
@@ -32,12 +28,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import android.app.Application;
-import android.content.res.Resources;
 import android.webkit.CookieManager;
-import android.widget.Toast;
 
-public class HtmlPage extends Application {
+public class HtmlPage{
 	InputStream is;
 	boolean inputStreamLoadSuccessfull = false;
 	Document doc;
@@ -108,12 +101,23 @@ public class HtmlPage extends Application {
 	}
 	
 	public String getpageString() throws IOException{
-//		Document doc = Jsoup.parse(is, "UTF-8", "http://online.mrt.ac.lk/");
-		
 		Elements page = doc.select("div.region-content");
 		
 		return page.get(0).html();
-//		return doc.html();
+	}
+	
+	public int getBlockNum() throws IOException{		
+		Elements block = doc.select("div.block");
+		
+		return block.size();
+	}
+	
+	public boolean isLogin(){
+		Elements login = doc.select("div.loginpanel");
+		if(login.size()>0)
+			return true;
+		else
+			return false;
 	}
 
 }

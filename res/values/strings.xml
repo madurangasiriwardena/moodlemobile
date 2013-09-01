@@ -8,6 +8,9 @@
     <string name="title_activity_page_template">PageTemplate</string>
     <string name="base_url">https://online.mrt.ac.lk/</string>
     <string name="login_url">https://online.mrt.ac.lk/login/index.php</string>
-    
+    <string name="base_url_http">http://online.mrt.ac.lk/</string>
+    <string name="log_out">Log Out</string>
+    <string name="nevigate">Go to</string>
+    <string name="title_activity_timeout_login">TimeoutLoginActivity</string>
 
 </resources>

@@ -1,5 +1,34 @@
 package com.example.moodleandroid;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyStore;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.HTTP;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.app.Activity;
@@ -21,11 +50,10 @@ public class LoginActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		System.out.println("login start");
 		
 		final Context context = this;
 
-		WebView webView = (WebView) findViewById(R.id.webViewLogin);
+		final WebView webView = (WebView) findViewById(R.id.webViewLogin);
 
 		// Enable JavaScript.
 		webView.getSettings().setJavaScriptEnabled(true);
@@ -33,18 +61,45 @@ public class LoginActivity extends Activity {
 		// Load the page
 		Intent intent = getIntent();
 		if (intent.getData() != null) {
-			webView.loadUrl(getString(R.string.login_url));
+			try {
+				//load the page from httppost
+				final URI url = new URI(getString(R.string.login_url));
+
+				HttpClient httpclient = getNewHttpClient();
+				HttpPost httppost = new HttpPost(url);
+
+				try {
+					HttpResponse response = httpclient.execute(httppost);
+					HttpEntity entity = response.getEntity();
+					InputStream is = entity.getContent();
+					Document doc = Jsoup.parse(is, "UTF-8", getString(R.string.base_url));
+					
+					Elements login = doc.select("div.loginpanel");
+					
+					
+					try {
+						webView.loadData(login.html(), "text/html", "UTF-8");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+			
 		}
 
-//		webView.setWebChromeClient(new WebChromeClient() {
-//			// Show loading progress in activity's title bar.
-//			@Override
-//			public void onProgressChanged(WebView view, int progress) {
-//				setProgress(progress * 100);
-//			}
-//		});
 		webView.setWebViewClient(new WebViewClient() {
-			// When start to load page, show url in activity's title bar
 			
 			public void onReceivedSslError(WebView view,
 					SslErrorHandler handler, SslError error) {
@@ -54,27 +109,52 @@ public class LoginActivity extends Activity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				setTitle(url);
+				System.out.println("client " + url);
+				if(url.equalsIgnoreCase(getString(R.string.base_url_http))){
+					finish();
+					Intent result = new Intent(context, PageTemplate.class);
+		        	startActivity(result);
+		        	
+				}
 			}
 			
 			
 			@Override
 		      public void onPageFinished(WebView view, String url) {
 				i++;
-				System.out.println("onpagefinish");
+				System.out.println("finish " + url);
 		        CookieSyncManager.getInstance().sync();
 		        // Get the cookie from cookie jar.
 		        String cookie = CookieManager.getInstance().getCookie(url);
 		        if (cookie == null) {
 		          return;
 		        }
-		        
-		        if(i==2){
-		        	Intent result = new Intent(context, PageTemplate.class);
-		        	startActivity(result);
-		        }
-//		        finish();
 		      }
 		});
+	}
+	
+	public HttpClient getNewHttpClient() {
+	    try {
+	        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+	        trustStore.load(null, null);
+
+	        SSLSocketFactory sf = new MySSLSocketFactory(trustStore);
+	        sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+	        HttpParams params = new BasicHttpParams();
+	        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+	        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+
+	        SchemeRegistry registry = new SchemeRegistry();
+	        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+	        registry.register(new Scheme("https", sf, 443));
+
+	        ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
+
+	        return new DefaultHttpClient(ccm, params);
+	    } catch (Exception e) {
+	        return new DefaultHttpClient();
+	    }
 	}
 
 	@Override
