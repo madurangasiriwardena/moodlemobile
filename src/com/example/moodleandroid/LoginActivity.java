@@ -75,10 +75,18 @@ public class LoginActivity extends Activity {
 					Document doc = Jsoup.parse(is, "UTF-8", getString(R.string.base_url));
 					
 					Elements login = doc.select("div.loginpanel");
+					Document page = Jsoup.parse(login.html());
+					page.head().appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", "login.css");
+					page.body().getElementsByClass("desc").remove();
+					page.body().getElementsByClass("forgetpass").remove();
+					page.body().getElementsByTag("h2").remove();
+					page.body().prependElement("h2").text("Login");
+					System.out.println(page.html());
 					
 					
 					try {
-						webView.loadData(login.html(), "text/html", "UTF-8");
+						webView.loadDataWithBaseURL("file:///android_asset/.", page.outerHtml(), "text/html", "UTF-8", null);
+//						webView.loadData(login.html(), "text/html", "UTF-8");
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -122,7 +130,7 @@ public class LoginActivity extends Activity {
 			@Override
 		      public void onPageFinished(WebView view, String url) {
 				i++;
-				System.out.println("finish " + url);
+//				System.out.println("finish " + url);
 		        CookieSyncManager.getInstance().sync();
 		        // Get the cookie from cookie jar.
 		        String cookie = CookieManager.getInstance().getCookie(url);

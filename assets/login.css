@@ -1,0 +1,37 @@
+@CHARSET "ISO-8859-1";
+body {
+	background-color: FEDE89;
+	margin:0;
+	padding:0;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+}
+
+h2{
+	padding-top: 30%;
+}
+
+#username, #password{
+	width: 90%;
+	margin: auto;
+	margin-bottom: 5%;
+	  border-radius: 5px;
+}
+
+#loginbtn {
+	font-family: Arial;
+  color: #050505;
+  text-decoration: none;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0px 1px 3px #666666;
+  -moz-box-shadow: 0px 1px 3px #666666;
+  box-shadow: 0px 1px 3px #666666;
+  text-shadow: 1px 1px 1px #666666;
+  border: solid #FFE7A9 1px;
+  background: -webkit-gradient(linear, 0 0, 0 100%, from(#FFCB44), to(#FFE7A9));
+}
+
+
