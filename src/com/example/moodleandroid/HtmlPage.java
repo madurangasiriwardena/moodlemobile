@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyStore;
+import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -109,7 +110,7 @@ public class HtmlPage{
 	public int getBlockNum() throws IOException{		
 		Elements block = doc.select("div.block");
 		
-		return block.size();
+		return (block.size()+1);
 	}
 	
 	public boolean isLogin(){
@@ -118,6 +119,40 @@ public class HtmlPage{
 			return true;
 		else
 			return false;
+	}
+	
+	public ArrayList<String> getBlockHeaders(){
+		ArrayList<String> headers = new ArrayList<String>();
+		
+		headers.add("Page Content");
+		
+		Elements block = doc.select("div.block");
+		for(int i=0; i<block.size(); i++){
+			String text = block.get(i).getElementsByTag("h2").text();
+			if(!text.equalsIgnoreCase("")){
+				headers.add(text);
+			}
+			
+		}
+		
+		return headers;
+	}
+	
+	public String getBlock(String itemHeader){
+		
+		if(itemHeader.equalsIgnoreCase("Page Content")){
+			return doc.select("div.region-content").html();
+		}
+		
+		Elements block = doc.select("div.block");
+		for(int i=0; i<block.size(); i++){
+			String text = block.get(i).getElementsByTag("h2").text();
+			if(text.equalsIgnoreCase(itemHeader)){
+				return block.get(i).html();
+			}
+			
+		}
+		return "";
 	}
 
 }

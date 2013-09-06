@@ -29,6 +29,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.actionbarsherlock.app.SherlockActivity;
+
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.app.Activity;
@@ -43,8 +45,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends SherlockActivity {
 	int i = 0;
+	WebView webView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +56,7 @@ public class LoginActivity extends Activity {
 		
 		final Context context = this;
 
-		final WebView webView = (WebView) findViewById(R.id.webViewLogin);
+		webView = (WebView) findViewById(R.id.webViewLogin);
 
 		// Enable JavaScript.
 		webView.getSettings().setJavaScriptEnabled(true);
@@ -61,50 +64,7 @@ public class LoginActivity extends Activity {
 		// Load the page
 		Intent intent = getIntent();
 		if (intent.getData() != null) {
-			try {
-				//load the page from httppost
-				final URI url = new URI(getString(R.string.login_url));
-
-				HttpClient httpclient = getNewHttpClient();
-				HttpPost httppost = new HttpPost(url);
-
-				try {
-					HttpResponse response = httpclient.execute(httppost);
-					HttpEntity entity = response.getEntity();
-					InputStream is = entity.getContent();
-					Document doc = Jsoup.parse(is, "UTF-8", getString(R.string.base_url));
-					
-					Elements login = doc.select("div.loginpanel");
-					Document page = Jsoup.parse(login.html());
-					page.head().appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", "login.css");
-					page.body().getElementsByClass("desc").remove();
-					page.body().getElementsByClass("forgetpass").remove();
-					page.body().getElementsByTag("h2").remove();
-					page.body().prependElement("h2").text("Login");
-					System.out.println(page.html());
-					
-					
-					try {
-						webView.loadDataWithBaseURL("file:///android_asset/.", page.outerHtml(), "text/html", "UTF-8", null);
-//						webView.loadData(login.html(), "text/html", "UTF-8");
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				} catch (ClientProtocolException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-			
+			loadLogin();
 		}
 
 		webView.setWebViewClient(new WebViewClient() {
@@ -122,8 +82,8 @@ public class LoginActivity extends Activity {
 					finish();
 					Intent result = new Intent(context, PageTemplate.class);
 		        	startActivity(result);
-		        	
 				}
+				
 			}
 			
 			
@@ -164,12 +124,58 @@ public class LoginActivity extends Activity {
 	        return new DefaultHttpClient();
 	    }
 	}
+	
+	private void loadLogin(){
+		try {
+			//load the page from httppost
+			final URI url = new URI(getString(R.string.login_url));
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.login, menu);
-		return true;
+			HttpClient httpclient = getNewHttpClient();
+			HttpPost httppost = new HttpPost(url);
+
+			try {
+				HttpResponse response = httpclient.execute(httppost);
+				HttpEntity entity = response.getEntity();
+				InputStream is = entity.getContent();
+				Document doc = Jsoup.parse(is, "UTF-8", getString(R.string.base_url));
+				
+				Elements login = doc.select("div.loginpanel");
+				Document page = Jsoup.parse(login.html());
+				page.head().appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", "login.css");
+				page.body().getElementsByClass("desc").remove();
+				page.body().getElementsByClass("forgetpass").remove();
+				page.body().getElementsByTag("h2").remove();
+				page.body().prependElement("h2").text("Login");
+//				System.out.println(page.html());
+				
+				
+				try {
+					webView.loadDataWithBaseURL("file:///android_asset/.", page.outerHtml(), "text/html", "UTF-8", null);
+//					webView.loadData(login.html(), "text/html", "UTF-8");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 	}
+
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		// Inflate the menu; this adds items to the action bar if it is present.
+//		getMenuInflater().inflate(R.menu.login, menu);
+//		return true;
+//	}
 
 }
