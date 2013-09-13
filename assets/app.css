@@ -1,1 +1,19 @@
 @CHARSET "ISO-8859-1";
+
+body {
+	width: 90%;
+	padding: 0px;
+	margin: 5%;
+}
+
+select {
+	max-width: 90%;
+}
+
+form {
+	width: 100%;
+}
+
+fieldset {
+	width: 100%;
+}

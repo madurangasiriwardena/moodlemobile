@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="17" />
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -16,7 +16,7 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Sherlock" >
         <activity
-            android:name="com.example.moodleandroid.StartActivity"
+            android:name="com.example.view.StartActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,19 +25,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.moodleandroid.LoginActivity"
+            android:name="com.example.view.LoginActivity"
             android:label="@string/title_activity_login" >
         </activity>
         <activity
-            android:name="com.example.moodleandroid.PageTemplate"
+            android:name="com.example.view.PageTemplate"
             android:label="@string/title_activity_page_template" >
         </activity>
         <activity
-            android:name="com.example.moodleandroid.RedirectLoginActivity"
+            android:name="android.RedirectLoginActivity"
             android:label="@string/title_activity_timeout_login" >
         </activity>
         <activity
-            android:name="com.example.moodleandroid.SelectNevigate"
+            android:name="android.SelectNevigate"
             android:label="@string/title_activity_select_nevigate" >
         </activity>
     </application>
