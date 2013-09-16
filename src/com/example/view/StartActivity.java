@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 
+
 public class StartActivity extends SherlockActivity {
 
 	@Override
