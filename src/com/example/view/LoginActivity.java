@@ -32,12 +32,15 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.example.controller.MySSLSocketFactory;
 import com.example.moodleandroid.R;
+
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
@@ -47,11 +50,20 @@ import android.webkit.WebViewClient;
 public class LoginActivity extends SherlockActivity {
 	int i = 0;
 	WebView webView;
-
+	SharedPreferences preferences;
+	String base_url;
+	String login_url;
+	String base_url_http;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		base_url = preferences.getString("base_url","https://online.mrt.ac.lk/");
+		login_url = preferences.getString("login_url", "https://online.mrt.ac.lk/login/index.php");
+		base_url_http = preferences.getString("base_url_http", "http://online.mrt.ac.lk/");
 		
 		if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -83,7 +95,7 @@ public class LoginActivity extends SherlockActivity {
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				setTitle(url);
-				if(url.equalsIgnoreCase(getString(R.string.base_url_http))){
+				if(url.equalsIgnoreCase(base_url_http)){
 					finish();
 					Intent result = new Intent(context, PageTemplate.class);
 		        	startActivity(result);
@@ -125,7 +137,7 @@ public class LoginActivity extends SherlockActivity {
 	private void loadLogin(){
 		try {
 			//load the page from httppost
-			final URI url = new URI(getString(R.string.login_url));
+			final URI url = new URI(login_url);
 
 			HttpClient httpclient = getNewHttpClient();
 			HttpPost httppost = new HttpPost(url);
@@ -134,7 +146,7 @@ public class LoginActivity extends SherlockActivity {
 				HttpResponse response = httpclient.execute(httppost);
 				HttpEntity entity = response.getEntity();
 				InputStream is = entity.getContent();
-				Document doc = Jsoup.parse(is, "UTF-8", getString(R.string.base_url));
+				Document doc = Jsoup.parse(is, "UTF-8", base_url);
 				
 				Elements login = doc.select("div.loginpanel");
 				Document page = Jsoup.parse(login.html());
