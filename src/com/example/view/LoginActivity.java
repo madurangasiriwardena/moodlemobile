@@ -32,10 +32,6 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.example.controller.MySSLSocketFactory;
 import com.example.moodleandroid.R;
-import com.example.moodleandroid.R.id;
-import com.example.moodleandroid.R.layout;
-import com.example.moodleandroid.R.string;
-
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.os.StrictMode;

@@ -1,6 +1,7 @@
 package com.example.view;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jsoup.Jsoup;
@@ -9,9 +10,12 @@ import org.jsoup.nodes.Document;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -22,10 +26,6 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 import com.example.controller.HtmlPage;
 import com.example.moodleandroid.R;
-import com.example.moodleandroid.R.drawable;
-import com.example.moodleandroid.R.id;
-import com.example.moodleandroid.R.layout;
-import com.example.moodleandroid.R.string;
 
 @SuppressLint("NewApi")
 public class PageTemplate extends SherlockActivity {
@@ -33,6 +33,13 @@ public class PageTemplate extends SherlockActivity {
 	Context context;
 	WebView webView;
 	String currentUrl;
+	private List<String> urlHistory = new ArrayList<String>();
+	String itemInGoToMenu = "Page Content";
+	SharedPreferences preferences;
+	String base_url;
+	String login_url;
+	String base_url_http;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +47,14 @@ public class PageTemplate extends SherlockActivity {
 		setContentView(R.layout.activity_page_template);
 		context = this;
 		
-		currentUrl = getString(R.string.base_url);
+		
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		base_url = preferences.getString("base_url","https://online.mrt.ac.lk/");
+		login_url = preferences.getString("login_url", "https://online.mrt.ac.lk/login/index.php");
+		base_url_http = preferences.getString("base_url_http", "http://online.mrt.ac.lk/");
+		
+		currentUrl = base_url;
+		urlHistory.add(0, currentUrl);
 
 		webView = (WebView) findViewById(R.id.webViewPage);
 //		webView.getSettings().setJavaScriptEnabled(true);
@@ -53,9 +67,11 @@ public class PageTemplate extends SherlockActivity {
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				
 				currentUrl = url;
+				System.out.println(url);
+				urlHistory.add(0, url);
 				LoadPageTask lpt = new LoadPageTask();
 				try {
-					page = lpt.execute(new String[]{url.toString(), getString(R.string.base_url)}).get();
+					page = lpt.execute(new String[]{url.toString(), base_url}).get();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (ExecutionException e) {
@@ -68,7 +84,7 @@ public class PageTemplate extends SherlockActivity {
 		
 		LoadPageTask lpt = new LoadPageTask();
 		try {
-			page = lpt.execute(new String[]{getString(R.string.base_url), getString(R.string.base_url)}).get();
+			page = lpt.execute(new String[]{base_url, base_url}).get();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
@@ -80,14 +96,55 @@ public class PageTemplate extends SherlockActivity {
 		actionbar.setTitle("Moodle");
 
 	}
+	
+	//load the previous page when the back button clicked.
+	//current url is in the 0th position. remove the 0th position to get the previous url.
+	//get the 0th item in the the arraylist of urlHistory and load the page.
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+
+		case KeyEvent.KEYCODE_BACK:
+			if (urlHistory.size() == 1) {
+				finish();
+				return true;
+			} else if (urlHistory.size() > 1) {
+				urlHistory.remove(0);
+
+				// load up the previous url
+				LoadPageTask lpt = new LoadPageTask();
+				try {
+					page = lpt.execute(new String[] { urlHistory.get(0),base_url }).get();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+
+				return true;
+			} else
+				return false;
+		default:
+			return super.onKeyDown(keyCode, event);
+		}
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		
+		SubMenu subBack = menu.addSubMenu("Back");
+        subBack.getItem()
+    		.setIcon(R.drawable.back)
+    		.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
 		SubMenu subNevigate = menu.addSubMenu("Go to");
 		ArrayList<String> headers = page.getBlockHeaders();
 		for(int i=0; i<headers.size(); i++){
-			subNevigate.add(headers.get(i));
+			MenuItem mi = subNevigate.add(headers.get(i));
+			
+			if(headers.get(i).equalsIgnoreCase(itemInGoToMenu)){
+				mi.setIcon(R.drawable.right_circular);
+			}
     	}
         
         subNevigate.getItem().setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
@@ -114,13 +171,35 @@ public class PageTemplate extends SherlockActivity {
 			
 		}else if(itemString.equalsIgnoreCase("Go to")){
 			
+		}else if(itemString.equalsIgnoreCase("Back")){
+			//load the previous page when the back button in the action bar clicked.
+			//current url is in the 0th position. remove the 0th position to get the previous url.
+			//get the 0th item in the the arraylist of urlHistory and load the page.
+				if (urlHistory.size() == 1) {
+		            finish();
+		        } else if (urlHistory.size() > 1) {
+		        	urlHistory.remove(0);
+
+		            // load up the previous url
+		            
+		            LoadPageTask lpt = new LoadPageTask();
+					try {
+						page = lpt.execute(new String[]{urlHistory.get(0), base_url}).get();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					} catch (ExecutionException e) {
+						e.printStackTrace();
+					}
+		        } 
+
 		}else if(itemString.equalsIgnoreCase("Profile")){
 			String profile = page.getProfileUrl();
 			currentUrl = profile;
+			urlHistory.add(0, currentUrl);
 			
 			LoadPageTask lpt = new LoadPageTask();
 			try {
-				page = lpt.execute(new String[]{profile, getString(R.string.base_url)}).get();
+				page = lpt.execute(new String[]{profile, base_url}).get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {
@@ -131,10 +210,11 @@ public class PageTemplate extends SherlockActivity {
 			
 		}else if(itemString.equalsIgnoreCase("Home")){
 			currentUrl = getString(R.string.base_url);
+			urlHistory.add(0, currentUrl);
 			
 			LoadPageTask lpt = new LoadPageTask();
 			try {
-				page = lpt.execute(new String[]{getString(R.string.base_url), getString(R.string.base_url)}).get();
+				page = lpt.execute(new String[]{base_url, base_url}).get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {
@@ -147,7 +227,7 @@ public class PageTemplate extends SherlockActivity {
 			
 			LoadPageTask lpt = new LoadPageTask();
 			try {
-				page = lpt.execute(new String[]{currentUrl, getString(R.string.base_url)}).get();
+				page = lpt.execute(new String[]{currentUrl, base_url}).get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {
@@ -160,7 +240,7 @@ public class PageTemplate extends SherlockActivity {
 			
 			LoadPageTask lpt = new LoadPageTask();
 			try {
-				page = lpt.execute(new String[]{logout, getString(R.string.base_url)}).get();
+				page = lpt.execute(new String[]{logout, base_url}).get();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {
@@ -168,12 +248,13 @@ public class PageTemplate extends SherlockActivity {
 			}
 			
 			Intent intent = new Intent(context, LoginActivity.class);
-			intent.setData(Uri.parse(getString(R.string.base_url)));
+			intent.setData(Uri.parse(base_url));
 			startActivity(intent);
 			finish();
 			
 		}else{
-			if(itemString.equalsIgnoreCase("Page Content")){			
+			if(itemString.equalsIgnoreCase("Page Content")){
+				itemInGoToMenu = itemString;
 				try {
 					String pageString = page.getpageString();
 					Document page = Jsoup.parse(pageString);
@@ -188,6 +269,7 @@ public class PageTemplate extends SherlockActivity {
 			
 			
 			String pageString = page.getBlock(itemString);
+			itemInGoToMenu = itemString;
 	    	Document page = Jsoup.parse(pageString);
 	    	page = addCssHeaders(page);
 	    	try {
@@ -211,11 +293,22 @@ public class PageTemplate extends SherlockActivity {
 	     }
 
 	     protected void onPostExecute(HtmlPage page) {
+	    	 if(page.isLogin()){
+	    		 finish();
+					Intent intent = new Intent(context, LoginActivity.class);
+					intent.setData(Uri.parse(base_url));
+		        	startActivity(intent);
+	    	 }
 				Document pageContent = Jsoup.parse(page.getpageString());
 				pageContent = addCssHeaders(pageContent);
 				webView.loadDataWithBaseURL("file:///android_asset/.", pageContent.toString(), "text/html", "UTF-8", null);
 				invalidateOptionsMenu(); 
 	     }
+	     
+	     @Override
+         protected void onPreExecute() {
+	    	 itemInGoToMenu = "Page Content";
+         }
 	}
 	
 	//Add css stylesheet headers to the page header.
