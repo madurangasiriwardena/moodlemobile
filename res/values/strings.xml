@@ -13,5 +13,6 @@
     <string name="nevigate">Go to</string>
     <string name="title_activity_timeout_login">TimeoutLoginActivity</string>
     <string name="title_activity_select_nevigate">SelectNevigate</string>
+    <string name="title_activity_change_address">ChangeAddressActivity</string>
 
 </resources>

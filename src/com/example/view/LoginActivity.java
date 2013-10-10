@@ -30,6 +30,9 @@ import org.jsoup.select.Elements;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.SubMenu;
 import com.example.controller.MySSLSocketFactory;
 import com.example.moodleandroid.R;
 
@@ -54,16 +57,18 @@ public class LoginActivity extends SherlockActivity {
 	String base_url;
 	String login_url;
 	String base_url_http;
+	Context context;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		context =this;
 		
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		base_url = preferences.getString("base_url","https://online.mrt.ac.lk/");
-		login_url = preferences.getString("login_url", "https://online.mrt.ac.lk/login/index.php");
-		base_url_http = preferences.getString("base_url_http", "http://online.mrt.ac.lk/");
+		base_url = preferences.getString("base_url", getString(R.string.base_url));
+		login_url = preferences.getString("login_url", getString(R.string.login_url));
+		base_url_http = preferences.getString("base_url_http", getString(R.string.base_url_http));
 		
 		if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -110,6 +115,52 @@ public class LoginActivity extends SherlockActivity {
 		actionbar.setTitle("Moodle");
 	}
 	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+        
+        SubMenu subSettings = menu.addSubMenu("Settings");
+        subSettings.add("Change Address");
+        
+        subSettings.getItem()
+        	.setIcon(R.drawable.settings)
+        	.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+        
+        return true;
+
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		String itemString = item.getTitle().toString();
+		if(itemString.equalsIgnoreCase("Settings")){
+			
+		}else if(itemString.equalsIgnoreCase("Change Address")){
+			Intent intent = new Intent(context, ChangeAddressActivity.class);
+			startActivityForResult(intent, 0);
+			
+		}
+		
+		return true;
+	}
+	
+	@Override
+	  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    switch (requestCode) {
+	      case 0:
+	        if (resultCode != RESULT_OK || data == null) {
+	          return;
+	        }
+	        base_url = preferences.getString("base_url", getString(R.string.base_url));
+			login_url = preferences.getString("login_url", getString(R.string.login_url));
+			base_url_http = preferences.getString("base_url_http", getString(R.string.base_url_http));
+	        loadLogin();
+
+	        return;
+	    }
+	    super.onActivityResult(requestCode, resultCode, data);
+	}
+	  
+	
 	public HttpClient getNewHttpClient() {
 	    try {
 	        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -139,7 +190,12 @@ public class LoginActivity extends SherlockActivity {
 			//load the page from httppost
 			final URI url = new URI(login_url);
 
-			HttpClient httpclient = getNewHttpClient();
+			HttpClient httpclient;
+			if(login_url.contains("https")){
+				httpclient = getNewHttpClient();
+			}else{
+				httpclient = new DefaultHttpClient();
+			}
 			HttpPost httppost = new HttpPost(url);
 
 			try {

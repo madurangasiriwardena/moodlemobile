@@ -40,6 +40,14 @@
             android:name="android.SelectNevigate"
             android:label="@string/title_activity_select_nevigate" >
         </activity>
+        <activity
+            android:name="com.example.view.ChangeAddressActivity"
+            android:label="@string/title_activity_change_address" >
+        </activity>
+        
+        <service
+            android:name=".CalenderSync"
+            android:exported="false"/>
     </application>
 
 </manifest>

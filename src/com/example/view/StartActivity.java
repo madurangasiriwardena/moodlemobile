@@ -24,9 +24,9 @@ public class StartActivity extends SherlockActivity {
 		String installed = preferences.getString("installed","false");
 		if(!installed.equals("true")){
 			SharedPreferences.Editor editor = preferences.edit();
-			editor.putString("base_url","https://online.mrt.ac.lk/");
-			editor.putString("login_url", "https://online.mrt.ac.lk/login/index.php");
-			editor.putString("base_url_http", "http://online.mrt.ac.lk/");
+			editor.putString("base_url", getString(R.string.base_url));
+			editor.putString("login_url", getString(R.string.login_url));
+			editor.putString("base_url_http", getString(R.string.base_url_http));
 			editor.putString("installed","true");
 			editor.commit();
 		}

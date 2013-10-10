@@ -1,7 +1,9 @@
 package com.example.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,20 +38,27 @@ public class HtmlPage {
 	boolean inputStreamLoadSuccessfull = false;
 	Document doc;
 	String baseUrl;
-
+	ArrayList<String> javaScripts = new ArrayList<String>();
 
 	public HtmlPage(InputStream is) {
-		this.is = is;
-		inputStreamLoadSuccessfull = true;
+		try {
+			doc = Jsoup.parse(is, "UTF-8", baseUrl);
+			
+			this.is = is;
+			inputStreamLoadSuccessfull = true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
-	
+
 	public HtmlPage(String urlString, String baseUrl) {
 		loadPage(urlString, baseUrl);
 	}
-	
-	
-	//load the required web page from HttpPost
-	private void loadPage(String urlString, String baseUrl){
+
+	// load the required web page from HttpPost
+	private void loadPage(String urlString, String baseUrl) {
 		this.baseUrl = baseUrl;
 		try {
 			final URI url = new URI(urlString);
@@ -60,7 +69,7 @@ public class HtmlPage {
 			try {
 				String cookie = CookieManager.getInstance().getCookie(baseUrl);
 				httppost.setHeader("Cookie", cookie);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -73,6 +82,7 @@ public class HtmlPage {
 
 				this.is = is;
 				inputStreamLoadSuccessfull = true;
+//				javaScripts = getJavaScriptWithSrc();
 
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
@@ -87,10 +97,10 @@ public class HtmlPage {
 		}
 	}
 
-
-	//The security certificate presented by the Moodle server is not accepted by the application.
-	//So this tells the application to accept any kind of certificate.
-	//This won't be a matter as this application only connects to the Moodle.
+	// The security certificate presented by the Moodle server is not accepted
+	// by the application.
+	// So this tells the application to accept any kind of certificate.
+	// This won't be a matter as this application only connects to the Moodle.
 	public HttpClient getNewHttpClient() {
 		try {
 			KeyStore trustStore = KeyStore.getInstance(KeyStore
@@ -118,17 +128,17 @@ public class HtmlPage {
 		}
 	}
 
-	//Get the page content are of a moodle page
+	// Get the page content are of a moodle page
 	public String getpageString() {
 		Elements page = doc.select("div.region-content");
 
 		String pageString = page.get(0).html();
-		pageString += getJavaScript();
-
+//		pageString += getJavaScript();
+		
 		return pageString;
 	}
 
-	//Get the number of blocks including the page content area.
+	// Get the number of blocks including the page content area.
 	public int getBlockNum() throws IOException {
 		Elements block = doc.select("div.block");
 
@@ -143,7 +153,7 @@ public class HtmlPage {
 			return false;
 	}
 
-	//Get the headers of the blocks
+	// Get the headers of the blocks
 	public ArrayList<String> getBlockHeaders() {
 		ArrayList<String> headers = new ArrayList<String>();
 
@@ -161,7 +171,7 @@ public class HtmlPage {
 		return headers;
 	}
 
-	//Get the block having the given header
+	// Get the block having the given header
 	public String getBlock(String itemHeader) {
 
 		if (itemHeader.equalsIgnoreCase("Page Content")) {
@@ -173,7 +183,7 @@ public class HtmlPage {
 			String text = block.get(i).getElementsByTag("h2").text();
 			if (text.equalsIgnoreCase(itemHeader)) {
 				String blockString = block.get(i).html();
-				blockString += getJavaScript();
+//				blockString += getJavaScript();
 
 				return blockString;
 			}
@@ -182,7 +192,7 @@ public class HtmlPage {
 		return "";
 	}
 
-	//Get the logout url from the web page
+	// Get the logout url from the web page
 	public String getLogOutUrl() {
 		Elements logininfo = doc.select("div.logininfo");
 		Elements logininfourls = Jsoup.parse(logininfo.html()).body()
@@ -190,7 +200,7 @@ public class HtmlPage {
 		return logininfourls.get(1).attr("href");
 	}
 
-	//Get the url for the profile of the user
+	// Get the url for the profile of the user
 	public String getProfileUrl() {
 		Elements logininfo = doc.select("div.logininfo");
 		Elements logininfourls = Jsoup.parse(logininfo.html()).body()
@@ -198,8 +208,7 @@ public class HtmlPage {
 		return logininfourls.get(0).attr("href");
 	}
 
-	
-	//Get the javaScripts included in the script tags.
+	// Get the javaScripts included in the script tags.
 	public String getJavaScript() {
 		Elements script = doc.getElementsByTag("script");
 		String scriptString = "";
@@ -209,8 +218,114 @@ public class HtmlPage {
 				scriptString += script.get(i);
 			}
 		}
+//		System.out.println(scriptString);
+		
+//		for(int i=0; i<javaScripts.size(); i++){
+//			scriptString += "<script type=\"text/javascript\">" + javaScripts.get(i) + "</script>";
+//		}
+
 
 		return scriptString;
 	}
 
+//	// Get the javaScript urls
+//	public ArrayList<String> getJavaScriptWithSrc() {
+//		ArrayList<String> url = new ArrayList<String>();
+//		ArrayList<String> scriptString = new ArrayList<String>();
+//		Elements script = doc.head().select("script[src*=.js]");
+//
+//		for (int i = 0; i < script.size(); i++) {
+//			String currentUrl = script.get(i).attr("src").toString();
+//
+//			if (currentUrl.contains("?")) {
+//				String temp[] = currentUrl.split("\\?");
+//				if (temp[1].contains("&")) {
+//					String urltemp[] = temp[1].split("&");
+//					for (int j = 0; j < urltemp.length; j++) {
+//						url.add(temp[0] + "?" + urltemp[j]);
+//					}
+//				} else {
+//					url.add(temp[1]);
+//				}
+//			} else {
+//				url.add(script.get(i).attr("src").toString());
+//			}
+//		}
+//
+//		for (int i = 0; i < url.size(); i++) {
+//			scriptString.add(loadJavaScript(url.get(i)));
+//		}
+//
+//		return scriptString;
+//	}
+//
+//	// load the required web page from HttpPost
+//	public String loadJavaScript(String urlString) {
+//		String javaScript = "";
+//		try {
+//			final URI url = new URI(urlString);
+//
+//			HttpClient httpclient = getNewHttpClient();
+//			HttpPost httppost = new HttpPost(url);
+//
+//			try {
+//				String cookie = CookieManager.getInstance().getCookie(baseUrl);
+//				httppost.setHeader("Cookie", cookie);
+//
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//
+//			try {
+//				HttpResponse response = httpclient.execute(httppost);
+//				HttpEntity entity = response.getEntity();
+//				InputStream is = entity.getContent();
+//				javaScript = getStringFromInputStream(is);
+//
+//			} catch (UnsupportedEncodingException e) {
+//				e.printStackTrace();
+//			} catch (ClientProtocolException e) {
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//
+//		} catch (URISyntaxException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return javaScript;
+//	}
+//
+//	// convert InputStream to String
+//	private static String getStringFromInputStream(InputStream stream) {
+//
+//		BufferedReader br = null;
+//		StringBuilder sb = new StringBuilder();
+//
+//		String line;
+//		try {
+//
+//			br = new BufferedReader(new InputStreamReader(stream));
+//			while ((line = br.readLine()) != null) {
+////				System.out.println(line);
+//				sb.append(line);
+//			}
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} finally {
+//			if (br != null) {
+//				try {
+//					br.close();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//		return sb.toString();
+//
+//	}
+//
 }

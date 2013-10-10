@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -25,6 +26,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 import com.example.controller.HtmlPage;
+import com.example.moodleandroid.CalenderSync;
 import com.example.moodleandroid.R;
 
 @SuppressLint("NewApi")
@@ -49,16 +51,20 @@ public class PageTemplate extends SherlockActivity {
 		
 		
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		base_url = preferences.getString("base_url","https://online.mrt.ac.lk/");
-		login_url = preferences.getString("login_url", "https://online.mrt.ac.lk/login/index.php");
-		base_url_http = preferences.getString("base_url_http", "http://online.mrt.ac.lk/");
+		base_url = preferences.getString("base_url",getString(R.string.base_url));
+		login_url = preferences.getString("login_url", getString(R.string.login_url));
+		base_url_http = preferences.getString("base_url_http", getString(R.string.base_url_http));
+		
+		Intent mServiceIntent = new Intent(context, CalenderSync.class);
+		startService(mServiceIntent);
 		
 		currentUrl = base_url;
 		urlHistory.add(0, currentUrl);
 
 		webView = (WebView) findViewById(R.id.webViewPage);
-//		webView.getSettings().setJavaScriptEnabled(true);
-
+		webView.getSettings().setJavaScriptEnabled(true);
+		
+		webView.setWebChromeClient(new WebChromeClient());
 		
 		//override the clicks on webview and avoid from default action
 		webView.setWebViewClient(new WebViewClient() {
@@ -258,7 +264,9 @@ public class PageTemplate extends SherlockActivity {
 				try {
 					String pageString = page.getpageString();
 					Document page = Jsoup.parse(pageString);
+					page.head().append(this.page.getJavaScript());
 					page = addCssHeaders(page);
+					page = addScriptHeaders(page);
 					webView.loadDataWithBaseURL("file:///android_asset/.", page.toString(), "text/html", "UTF-8", null);
 					invalidateOptionsMenu();
 					return true;
@@ -271,7 +279,9 @@ public class PageTemplate extends SherlockActivity {
 			String pageString = page.getBlock(itemString);
 			itemInGoToMenu = itemString;
 	    	Document page = Jsoup.parse(pageString);
+	    	page.head().append(this.page.getJavaScript());
 	    	page = addCssHeaders(page);
+	    	page = addScriptHeaders(page);
 	    	try {
 				webView.loadDataWithBaseURL("file:///android_asset/.", page.toString(), "text/html", "UTF-8", null);
 				invalidateOptionsMenu();
@@ -288,7 +298,7 @@ public class PageTemplate extends SherlockActivity {
 	private class LoadPageTask extends AsyncTask<String, HtmlPage, HtmlPage> {
 	     protected HtmlPage doInBackground(String... urls) {
 	    	 page = new HtmlPage(urls[0], urls[1]);
-	    	 
+//	    	 page.getJavaScriptWithSrc();
 	         return page;
 	     }
 
@@ -300,9 +310,12 @@ public class PageTemplate extends SherlockActivity {
 		        	startActivity(intent);
 	    	 }
 				Document pageContent = Jsoup.parse(page.getpageString());
+				pageContent.head().append(page.getJavaScript());
 				pageContent = addCssHeaders(pageContent);
+				pageContent = addScriptHeaders(pageContent);
 				webView.loadDataWithBaseURL("file:///android_asset/.", pageContent.toString(), "text/html", "UTF-8", null);
 				invalidateOptionsMenu(); 
+				
 	     }
 	     
 	     @Override
@@ -319,5 +332,13 @@ public class PageTemplate extends SherlockActivity {
     	page.head().appendElement("link").attr("rel", "stylesheet").attr("type", "text/css").attr("href", "cssbase.css");
     	return page;
 	}
+	
+	//Add javaScript headers to the page header.
+		private Document addScriptHeaders(Document page){
+			page.head().appendElement("script").attr("type", "text/javascript").attr("src", "javascript-static.js");
+			page.head().appendElement("script").attr("type", "text/javascript").attr("src", "loader-min.js");
+			page.head().appendElement("script").attr("type", "text/javascript").attr("src", "simpleyui-min.js");
+	    	return page;
+		}
 
 }
