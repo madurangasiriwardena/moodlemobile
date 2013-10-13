@@ -62,7 +62,7 @@ public class PageTemplate extends SherlockActivity {
 		urlHistory.add(0, currentUrl);
 
 		webView = (WebView) findViewById(R.id.webViewPage);
-		webView.getSettings().setJavaScriptEnabled(true);
+//		webView.getSettings().setJavaScriptEnabled(true);
 		
 		webView.setWebChromeClient(new WebChromeClient());
 		
@@ -298,7 +298,6 @@ public class PageTemplate extends SherlockActivity {
 	private class LoadPageTask extends AsyncTask<String, HtmlPage, HtmlPage> {
 	     protected HtmlPage doInBackground(String... urls) {
 	    	 page = new HtmlPage(urls[0], urls[1]);
-//	    	 page.getJavaScriptWithSrc();
 	         return page;
 	     }
 
